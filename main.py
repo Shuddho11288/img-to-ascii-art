@@ -9,7 +9,7 @@ img = Image.open(image_path)
 # resizing the image
 width, height = img.size
 aspect_ratio = height/width
-new_width = 120
+new_width = 300 #How much clear you want to see
 new_height = (aspect_ratio*new_width/2)
 img = img.resize((new_width, int(new_height)))
 
@@ -23,8 +23,15 @@ pixels = img.getdata()
 # replace each pixel with a character from array
 
 chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
+charArray = list(chars)
+charLength = len(charArray)
+interval = charLength/256
+import math
 
-new_pixels = [chars[int(pixel*0.27450980392)] for pixel in pixels]
+
+def getChar(inputInt):
+    return charArray[math.floor(inputInt*interval)]
+new_pixels = [getChar(pixel) for pixel in pixels]
 new_pixels = ''.join(new_pixels)
 
 # split string of chars into multiple strings of length equal to new width and create a list
