@@ -1,7 +1,7 @@
 import sys
 from PIL import Image
 from tkinter.filedialog import askopenfile
-
+import rich
 # get image path
 class ImageToAscii:
     def __init__(self):
@@ -38,7 +38,8 @@ class ImageToAscii:
         interval = charLength/256
         import math
 
-        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?+<>_-~i!lI;:,\"^`'. "
+        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft. "
+        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft_-~i!lI;:,\"^`'."
         charArray = list(chars)
         charLength = len(charArray)
         interval = charLength/256
@@ -49,7 +50,12 @@ class ImageToAscii:
 
         def getChar(inputInt,col):
             #rich.print(f"[rgb{col}]"+charArray[math.floor(inputInt*interval)]+f"[/rgb{col}]")
-            return "<span style='color:rgba{};'>{}</>".format(col,"#")
+            try:
+                r,g,b,a  = col
+            except Exception:
+                r,g,b  = col
+            print("[rgb{}]{}[/]".format((r,g,b),charArray[math.floor(inputInt*interval)]))
+            return "[rgb({},{},{})]{}[/]".format(r,g,b,charArray[math.floor(inputInt*interval)])
         new_pixels = [getChar(pixel,col) for pixel,col in zip(pixels,lista)]
         
         #rich.print(new_pixels)
@@ -65,15 +71,15 @@ class ImageToAscii:
                 final_res.remove("")
             except Exception:
                 break
-        final_res = "<br>".join(final_res)
+        final_res = "\n".join(final_res)
         self.ascii_image = final_res
         #self.ascii_image = "<br>".join(self.ascii_image)
     
     def show(self):
-        print(self.ascii_image)
+        rich.print(self.ascii_image)
     def saveText(self):
         with open("output.html","w") as fp:
             fp.write(self.ascii_image)
 
 img = ImageToAscii()
-img.saveText()
+img.show()
