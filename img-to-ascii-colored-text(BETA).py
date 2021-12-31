@@ -1,68 +1,61 @@
-import sys
 from PIL import Image
 from tkinter.filedialog import askopenfile
 import rich
-# get image path
+
+
 class ImageToAscii:
     def __init__(self):
         image_path = askopenfile().name
         print(image_path)
-        img = Image.open(image_path)
+        self.img = Image.open(image_path)
+        self.convertToRGBA()
+        self.resize()
+        self.main()
+        
 
-        # resizing the image
-        width, height = img.size
-        aspect_ratio = height/width
-        new_width = int(input())
-        new_height = (aspect_ratio*new_width/2)
-        img = img.resize((new_width, int(new_height)))
+    def convertToRGBA(self):
+        bands = self.img.getbands()
+        if len(bands) == 1 or len(bands) == 3:
+            self.img = self.img.convert("RGBA")
 
+    def resize(self):
+        self.width, self.height = self.img.size
+        aspect_ratio = self.height / self.width
+        self.new_width = int(input())
+        self.new_height = aspect_ratio * self.new_width / 2
+        self.img = self.img.resize((self.new_width, int(self.new_height)))
+
+    def main(self):
         lista = []
-        pixels = img.getdata()
+        pixels = self.img.getdata()
         for pixel in pixels:
             lista.append(pixel)
-        #print(lista)
-        #rich.print(lista)
-        # convert image to greyscale format
-        img = img.convert('L')
-        #img = img.convert('1') #for lite mode.
+
+        img = self.img.convert("L")
 
         pixels = img.getdata()
 
-        # replace each pixel with a character from array
-
-        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?+<>_-~i!lI;:,\"^`'."
-        charArray = list(chars)
-        charArray.append("<span style='background-color:rgba(0,0,0,0)'>H</span>")
-        charArray = charArray[::-1]
-        charLength = len(charArray)
-        interval = charLength/256
-        import math
-
-        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft. "
-        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft_-~i!lI;:,\"^`'."
+        chars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft_-~i!lI;:,\"^`'. "[::-1]
         charArray = list(chars)
         charLength = len(charArray)
-        interval = charLength/256
+        interval = charLength / 256
         import math
 
+        def getChar(inputInt, col):
 
+            r, g, b, a = col
 
+            return "[rgb({},{},{})]{}[/]".format(
+                r, g, b, charArray[math.floor(inputInt * interval)]
+            )
 
-        def getChar(inputInt,col):
-            #rich.print(f"[rgb{col}]"+charArray[math.floor(inputInt*interval)]+f"[/rgb{col}]")
-            try:
-                r,g,b,a  = col
-            except Exception:
-                r,g,b  = col
-            print("[rgb{}]{}[/]".format((r,g,b),charArray[math.floor(inputInt*interval)]))
-            return "[rgb({},{},{})]{}[/]".format(r,g,b,charArray[math.floor(inputInt*interval)])
-        new_pixels = [getChar(pixel,col) for pixel,col in zip(pixels,lista)]
-        
-        #rich.print(new_pixels)
+        new_pixels = [getChar(pixel, col) for pixel, col in zip(pixels, lista)]
 
-        # split string of chars into multiple strings of length equal to new width and create a list
-        new_pixels_count = len(new_pixels)+len(str(lista))
-        self.ascii_image = [new_pixels[index:index + new_width] for index in range(0, new_pixels_count, new_width)]
+        new_pixels_count = len(new_pixels) + len(str(lista))
+        self.ascii_image = [
+            new_pixels[index : index + self.new_width]
+            for index in range(0, new_pixels_count, self.new_width)
+        ]
         final_res = []
         for x in self.ascii_image:
             final_res.append("".join(x))
@@ -73,13 +66,14 @@ class ImageToAscii:
                 break
         final_res = "\n".join(final_res)
         self.ascii_image = final_res
-        #self.ascii_image = "<br>".join(self.ascii_image)
-    
+
     def show(self):
         rich.print(self.ascii_image)
+
     def saveText(self):
-        with open("output.html","w") as fp:
+        with open("output.html", "w") as fp:
             fp.write(self.ascii_image)
+
 
 img = ImageToAscii()
 img.show()
